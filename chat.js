@@ -23,7 +23,7 @@
                     </div>
                 `}var u,i=i+r+g+e+c,g="fixed",e="10px";!this.pipActive&&0!=window.toolbar.visible||(g="",e="0"),this.shadow.innerHTML=`
                 <style>
-                    @import url('chat.css');
+                    @import url('https://cdn.jsdelivr.net/gh/loomlayorg/widget-public@main/chat.css');
                 </style>
                 <div id="chat-container" style="position: ${g}; border-radius: ${e}">
                     <div style="background-color: ${this.headerColor}" id="chat-header">
