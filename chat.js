@@ -1,49 +1,792 @@
-!function(){class e extends HTMLElement{constructor(){super(),this.shadow=this.attachShadow({mode:"open"}),this.loomlayConfig={apiEndpoint:"https://api.loomlay.com/api:sDfF41c6/conversation/create",authToken:"some_token",agentUUID:"01876f7a09b24a43b76fe0fcd4daeee5",accessKey:null,chatTitle:"Loomlay Chat",closeButtonColour:"#2773747",sendButtonColor:"#2773747",switchButtonColor:"#2773747",headerColor:"#2773747",footerColor:"#2773747",bodyColor:"#2773747",messageInputColor:"#2773747",openChatButtonColor:"#2773747",extraContext:null,context:"",autoResponse:!1},this.requestBody={agent_uuid:this.loomlayConfig.agentUUID,context:null,extra_context:null,continue:!0,key:null},this.extraLoggingEnabled=!0,this.agentList=[],this.settingsEnabled=!1,this.pipActive=!1,this.pipRequestInProgress=!1,this.waitingMessages=[],this.automaticeMessages=[{message:"your request recieved",timeout:5e3},{message:"analyzing the data",timeout:1e4},{message:"preparing the answer",timeout:2e4}],this.isOpen=!0,this.initialMessage=""}connectedCallback(){this.replaceLoomlayAction(),this.chatTitle=this.getAttribute("title")||this.loomlayConfig.chatTitle,this.closeButtonColour=this.getAttribute("closeButtonColour")||this.loomlayConfig.closeButtonColour,this.sendButtonColor=this.getAttribute("sendButtonColor")||this.loomlayConfig.sendButtonColor,this.switchButtonColor=this.getAttribute("switchButtonColor")||this.loomlayConfig.switchButtonColor,this.headerColor=this.getAttribute("headerColor")||this.loomlayConfig.headerColor,this.footerColor=this.getAttribute("footerColor")||this.loomlayConfig.footerColor,this.bodyColor=this.getAttribute("bodyColor")||this.loomlayConfig.bodyColor,this.messageInputColor=this.getAttribute("messageInputColor")||this.loomlayConfig.messageInputColor,this.openChatButtonColor=this.getAttribute("openChatButtonColor")||this.loomlayConfig.openChatButtonColor,this.autoResponse="true"==this.getAttribute("auto-response")||this.loomlayConfig.autoResponse,this.isOpen="true"==this.getAttribute("isOpen")||this.loomlayConfig.isOpen,this.initialMessage=this.getAttribute("initial-message")||this.loomlayConfig.initialMessage;var e=this.querySelector("automaticResponseMessages");if(e&&e.childNodes&&0<e.childNodes.length){var t=e.querySelectorAll("message");if(t&&0<t.length){this.automaticeMessages=[];for(var s=0;s<t.length;s++){var o=t[s],n=parseInt(o.getAttribute("timeout"));n&&this.automaticeMessages.push({message:o.textContent,timeout:n})}}}e=this.querySelector("userContext"),e&&e.innerHTML?this.extraContext=e.innerHTML:this.extraContext=this.loomlayConfig.extraContext,this.context=this.getAttribute("context")||this.loomlayConfig.context,this.authToken=this.getAttribute("accesskey"),this.authToken&&(this.loomlayConfig.authToken=this.authToken),e=this.querySelector("agents");let a=[];1<(a=e?Array.from(e.querySelectorAll("agent")):a).length?this.settingsEnabled=!0:this.settingsEnabled=!1,0<a.length&&(null!=(u=localStorage.getItem("selectedAgent"))?(this.loomlayConfig.agentUUID=u,this.requestBody.agent_uuid=u):(this.loomlayConfig.agentUUID=a[0].getAttribute("uuid"),this.requestBody.agent_uuid=this.loomlayConfig.agentUUID)),null!=this.extraContext&&""!=this.extraContext&&(this.requestBody.extra_context=this.extraContext);var e="checked",i="none",i=(this.context&&("0"!=this.context&&"off"!=this.context.toLowerCase()||(e=""),"select"==this.context.toLowerCase())&&(e="checked",i="block"),`
-                <div class="memory-container" style="display: ${i};">
-                    <input type="checkbox" id="continue-checkbox" style="background-color: ${this.switchButtonColor};" class="memory-checkbox" ${e} >
+(function () {
+    class LoomlayChatWidget extends HTMLElement {
+        constructor() {
+            super();
+            this.shadow = this.attachShadow({ mode: 'open' });
+
+            this.loomlayConfig = {
+                apiEndpoint: "https://api.loomlay.com/api:sDfF41c6/conversation/create",
+                authToken: "some_token", // **REPLACE WITH YOUR ACTUAL TOKEN**
+                agentUUID: "01876f7a09b24a43b76fe0fcd4daeee5", // Default agent, will be overridden if agents are defined
+                accessKey: null, // Kept for potential future use, though currently not used as requested
+                chatTitle: "Loomlay Chat",
+                closeButtonColour: "#2773747",
+                sendButtonColor: "#2773747",
+                switchButtonColor: "#2773747",
+                headerColor: "#2773747",
+                footerColor: "#2773747",
+                bodyColor: "#2773747",
+                messageInputColor: "#2773747",
+                openChatButtonColor: "#2773747",
+                extraContext: null,
+                context: "",
+                autoResponse: false
+            };
+            this.requestBody = {
+                agent_uuid: this.loomlayConfig.agentUUID,
+                context: null,
+                extra_context: null,
+                continue: true,
+                key: null,
+                extra_params: null,
+            };
+
+            this.extraLoggingEnabled = true;
+            this.agentList = []; // To store fetched agent list
+            this.settingsEnabled = false; // Initially settings are off
+            this.pipActive = false;
+            this.pipRequestInProgress = false;
+            this.waitingMessages = [];
+            this.automaticeMessages = [
+                { "message": "your request recieved", "timeout": 5000 },
+                { "message": "analyzing the data", "timeout": 10000 },
+                { "message": "preparing the answer", "timeout": 20000 }
+            ];
+            this.isOpen = true;
+            this.initialMessage = "";
+            this.extraParams = "";
+            this.cdnUrl = "https://cdn.jsdelivr.net/gh/loomlayorg/widget-public@main"; // Define CDN URL
+        }
+
+        connectedCallback() {
+            this.replaceLoomlayAction();
+            this.chatTitle = this.getAttribute('title') || this.loomlayConfig.chatTitle; // Use attribute title or default
+            this.closeButtonColour = this.getAttribute('closeButtonColour') || this.loomlayConfig.closeButtonColour;
+            this.sendButtonColor = this.getAttribute('sendButtonColor') || this.loomlayConfig.sendButtonColor;
+            this.switchButtonColor = this.getAttribute('switchButtonColor') || this.loomlayConfig.switchButtonColor;
+            this.headerColor = this.getAttribute('headerColor') || this.loomlayConfig.headerColor;
+            this.footerColor = this.getAttribute('footerColor') || this.loomlayConfig.footerColor;
+            this.bodyColor = this.getAttribute('bodyColor') || this.loomlayConfig.bodyColor;
+            this.messageInputColor = this.getAttribute('messageInputColor') || this.loomlayConfig.messageInputColor;
+            this.openChatButtonColor = this.getAttribute('openChatButtonColor') || this.loomlayConfig.openChatButtonColor;
+            this.autoResponse = this.getAttribute('auto-response') == 'true' || this.loomlayConfig.autoResponse;
+            this.isOpen = this.getAttribute('isOpen') == 'true' || this.loomlayConfig.isOpen;
+            this.initialMessage = this.getAttribute('initial-message') || this.loomlayConfig.initialMessage;
+
+            const automaticeMessages = this.querySelector('automaticResponseMessages');
+            if (automaticeMessages && automaticeMessages.childNodes && automaticeMessages.childNodes.length > 0) {
+                var messages = automaticeMessages.querySelectorAll("message");
+                if (messages && messages.length > 0) {
+                    this.automaticeMessages = [];
+                    for (var i = 0; i < messages.length; i++) {
+                        var currentNode = messages[i];
+                        var timeOut = parseInt(currentNode.getAttribute("timeout"));
+                        if (timeOut) {
+                            this.automaticeMessages.push({ "message": currentNode.textContent, "timeout": timeOut });
+                        }
+                    }
+                }
+            }
+
+
+            const extraContextElement = this.querySelector('userContext');
+            if (extraContextElement && extraContextElement.innerHTML) {
+                this.extraContext = extraContextElement.innerHTML;
+            }
+            else {
+                this.extraContext = this.loomlayConfig.extraContext;
+            }
+
+            const extraParamsElement = this.querySelector('extraParams');
+            if (extraParamsElement && extraParamsElement.innerHTML) {
+                this.extraParams = extraParamsElement.innerHTML;
+            }
+            else {
+                this.extraParams = this.loomlayConfig.extra_params;
+            }
+
+            this.context = this.getAttribute('context') || this.loomlayConfig.context;
+
+
+            this.authToken = this.getAttribute('accesskey'); // Get the accessKey
+
+            if (this.authToken) {
+                this.loomlayConfig.authToken = this.authToken;
+            }
+
+            const agentsElement = this.querySelector('agents');
+            let agentElements = [];
+            if (agentsElement) {
+                agentElements = Array.from(agentsElement.querySelectorAll('agent'));
+            }
+
+            if (agentElements.length > 1) {
+                this.settingsEnabled = true; // Enable settings if more than one agent
+            } else {
+                this.settingsEnabled = false; // Disable settings otherwise
+            }
+
+            if (agentElements.length > 0) {
+                // Set initial agent to the first one in the list
+                var selectedAgent = localStorage.getItem("selectedAgent");
+                if (selectedAgent != null) {
+                    this.loomlayConfig.agentUUID = selectedAgent;
+                    this.requestBody.agent_uuid = selectedAgent;
+                }
+                else {
+                    this.loomlayConfig.agentUUID = agentElements[0].getAttribute('uuid');
+                    this.requestBody.agent_uuid = this.loomlayConfig.agentUUID;
+                }
+            }
+
+            if (this.extraContext != null && this.extraContext != "") {
+                this.requestBody.extra_context = this.extraContext;
+            }
+
+            if (this.extraParams != null && this.extraParams != "") {
+                this.requestBody.extra_params = JSON.parse(this.extraParams);
+            }
+
+            var checkedContext = "checked";
+            var display = "none";
+            if (this.context) {
+                if (this.context == "0" || this.context.toLowerCase() == "off") {
+                    checkedContext = "";
+                }
+                if (this.context.toLowerCase() == "select") {
+                    checkedContext = "checked";
+                    display = "block";
+                }
+            }
+
+            let headerRightItemsHTML = `
+                <div class="memory-container" style="display: ${display};">
+                    <input type="checkbox" id="continue-checkbox" style="background-color: ${this.switchButtonColor};" class="memory-checkbox" ${checkedContext} >
                     <label for="continue-checkbox" class="memory-checkbox-label">Context</label>
                 </div>
-            `);let r="",l="";e=`<button id="clear-chat-button" style="background-color: ${this.closeButtonColour}" aria-label="Clear Chat">
-                <img src="https://cdn.jsdelivr.net/gh/loomlayorg/widget-public@main/images/tabler_refresh.svg">
+            `;
+
+            let settingsButtonHTML = '';
+            let agentDropdownHTML = '';
+            let clearChatButton = '';
+            clearChatButton = `<button id="clear-chat-button" style="background-color: ${this.closeButtonColour}" aria-label="Clear Chat">
+                <img src="${this.cdnUrl}/images/tabler_refresh.svg">
                 </button>
-                `;let h="block";!this.pipActive&&0!=window.toolbar.visible||(h="none");var c,g=`<button id="popout-chat-button" style="background-color: ${this.closeButtonColour}; display: ${h}" aria-label="PopOut Chat">
-                <img src="https://cdn.jsdelivr.net/gh/loomlayorg/widget-public@main/images/open_new_window.svg">
+                `;
+
+            let popOutChatButton = '';
+            let displayPopOut = "block";
+            if (this.pipActive || window.toolbar.visible == false) {
+                displayPopOut = "none";
+            }
+            popOutChatButton = `<button id="popout-chat-button" style="background-color: ${this.closeButtonColour}; display: ${displayPopOut}" aria-label="PopOut Chat">
+                <img src="${this.cdnUrl}/images/open_new_window.svg">
                 </button>
-                `;let d="block";if(!this.pipActive&&0!=window.toolbar.visible||(d="none"),c=`<button id="close-chat-button" style="background-color: ${this.closeButtonColour}; display: ${d}" aria-label="Close Chat">
-                <img src="https://cdn.jsdelivr.net/gh/loomlayorg/widget-public@main/images/close.svg">
+                `;
+
+            let closeChatButton = '';
+            let displayClose = "block";
+            if (this.pipActive || window.toolbar.visible == false) {
+                displayClose = "none";
+            }
+            closeChatButton = `<button id="close-chat-button" style="background-color: ${this.closeButtonColour}; display: ${displayClose}" aria-label="Close Chat">
+                <img src="${this.cdnUrl}/images/close.svg">
                 </button>
-                `,this.settingsEnabled){let e="block";!this.pipActive&&0!=window.toolbar.visible||(e="none"),r=`<button id="settings-button" style="display: ${e}" aria-label="Settings">
-                <img src="https://cdn.jsdelivr.net/gh/loomlayorg/widget-public@main/images/settings.svg">
+                `;
+            if (this.settingsEnabled) {
+                let settingsButton = '';
+                let displaySettingsButton = "block";
+                if (this.pipActive || window.toolbar.visible == false) {
+                    displaySettingsButton = "none";
+                }
+
+                settingsButtonHTML = `<button id="settings-button" style="display: ${displaySettingsButton}" aria-label="Settings">
+                <img src="${this.cdnUrl}/images/settings.svg">
                 </button>
-                `,l=`
+                `; // "Settings" text
+
+                agentDropdownHTML = `
                     <div id="agent-dropdown-container">
-                        <select id="agent-dropdown">
+                        <select class="mainselection" id="agent-dropdown">
                             <option value="" disabled selected>Select Agent</option>
                         </select>
                     </div>
-                `}var u,i=i+r+g+e+c,g="fixed",e="10px";!this.pipActive&&0!=window.toolbar.visible||(g="",e="0"),this.shadow.innerHTML=`
+                `;
+
+            }
+            headerRightItemsHTML = headerRightItemsHTML + settingsButtonHTML + popOutChatButton + clearChatButton + closeChatButton;
+
+            var positionChatContainer = "fixed";
+            var borderRadius = "10px";
+            if (this.pipActive || window.toolbar.visible == false) {
+                var positionChatContainer = "";
+                var borderRadius = "0";
+
+            }
+//TBD remove hardcode style="height:12px"
+            this.shadow.innerHTML = `
                 <style>
-                    @import url('https://cdn.jsdelivr.net/gh/loomlayorg/widget-public@main/chat.css');
+                    @import url('${this.cdnUrl}/chat.css');
                 </style>
-                <div id="chat-container" style="position: ${g}; border-radius: ${e}">
+                <div id="chat-container" style="position: ${positionChatContainer}; border-radius: ${borderRadius}">
                     <div style="background-color: ${this.headerColor}" id="chat-header">
                         <div>
-                        <img style="height:12px" src="https://cdn.jsdelivr.net/gh/loomlayorg/widget-public@main/images/logo.svg"></img>
+                        <img style="height:12px" src="${this.cdnUrl}/images/logo.svg"></img>
                         <span>${this.chatTitle}</span>
                         </div>
                         <div id="header-right-items">
-                            ${i}
+                            ${headerRightItemsHTML}
                         </div>
-                        ${l}
+                        ${agentDropdownHTML}
                     </div>
-                    <div id="chat-messages" style="background-color: ${this.bodyColor}"><div id="defaultbackground"><img src="https://cdn.jsdelivr.net/gh/loomlayorg/widget-public@main/images/default.svg"></img><br/><br/><span>Begin conversation with Loomlay agents</span></div></div>
+                    <div id="chat-messages" style="background-color: ${this.bodyColor}"><div id="defaultbackground"><img src="${this.cdnUrl}/images/default.svg"></img><br/><br/></div></div>
                     <div id="chat-input" style="background-color: ${this.footerColor}">
                         <input type="text" id="message-input" style="background-color: ${this.messageInputColor}" placeholder="Type your message...">
-                        <button id="send-button" style="background-color: ${this.sendButtonColor}"><img src="https://cdn.jsdelivr.net/gh/loomlayorg/widget-public@main/images/chat_input.svg"></img>
+                        <button id="send-button" style="background-color: ${this.sendButtonColor}"><img src="${this.cdnUrl}/images/chat_input.svg"></img>
                         </button>
                     </div>
                 </div>
                 <button id="open-chat-button" style="background: ${this.openChatButtonColor}">
-                <img src="https://cdn.jsdelivr.net/gh/loomlayorg/widget-public@main/images/chat_button.svg"></img>
+                <img src="${this.cdnUrl}/images/chat_button.svg"></img>
                 </button>
-            `,this.chatContainer=this.shadow.querySelector("#chat-container"),this.chatHeader=this.shadow.querySelector("#chat-header"),this.chatMessages=this.shadow.querySelector("#chat-messages"),this.messageInput=this.shadow.querySelector("#message-input"),this.sendButton=this.shadow.querySelector("#send-button"),this.closeChatButton=this.shadow.querySelector("#close-chat-button"),this.clearChatButton=this.shadow.querySelector("#clear-chat-button"),this.popOutChatButton=this.shadow.querySelector("#popout-chat-button"),this.continueCheckbox=this.shadow.querySelector("#continue-checkbox"),this.openChatButton=this.shadow.querySelector("#open-chat-button"),this.settingsButton=this.shadow.querySelector("#settings-button"),this.agentDropdownContainer=this.shadow.querySelector("#agent-dropdown-container"),this.agentDropdown=this.shadow.querySelector("#agent-dropdown"),this.messageInput.addEventListener("keydown",e=>{"Enter"===e.key&&(this.sendMessage(),e.preventDefault())}),this.closeChatButton.addEventListener("click",()=>{this.chatContainer.style.display="none",this.openChatButton.style.display="flex",this.agentDropdownContainer&&(this.agentDropdownContainer.style.display="none")}),this.popOutChatButton.addEventListener("click",async()=>{if("documentPictureInPicture"in window==1){var e=document.querySelector("#block");let o=await documentPictureInPicture.requestWindow({width:380,height:500,lockAspectRatio:!0,copyStyleSheets:!0});[...document.styleSheets].forEach(t=>{try{var s=[...t.cssRules].map(e=>e.cssText).join(""),e=document.createElement("style");e.textContent=s,o.document.head.appendChild(e)}catch(e){s=document.createElement("link");s.rel="stylesheet",s.type=t.type,s.media=t.media,s.href=t.href,o.document.head.appendChild(s)}}),this.pipActive=!0,o.document.body.append(e),o.addEventListener("pagehide",e=>{var t=document.querySelector("#chatContainer"),e=e.target.querySelector("#block");this.pipActive=!1,t.append(e)})}else this.popoutChat()}),this.clearChatButton.addEventListener("click",()=>{this.removeConversationFromCache()}),this.openChatButton.addEventListener("click",()=>{this.chatContainer.style.display="flex",this.openChatButton.style.display="none";var e=JSON.parse(localStorage.getItem("cachedConversation"));!0!==this.isOpen&&""!=this.initialMessage&&null==e&&this.sendMessage(this.initialMessage)}),this.sendButton.addEventListener("click",()=>this.sendMessage()),this.settingsEnabled&&this.settingsButton&&this.agentDropdownContainer&&this.settingsButton.addEventListener("click",()=>{this.agentDropdownContainer.style.display="block"===this.agentDropdownContainer.style.display?"none":"block"}),this.settingsEnabled&&this.agentDropdown&&(this.populateAgentDropdownFromHTML(),this.agentList&&1<this.agentList.length&&(u=localStorage.getItem("selectedAgent"),this.agentDropdown.value=null!=u?u:this.agentList[0].agent_uuid),this.agentDropdown.addEventListener("change",e=>{e=e.target.value;this.selectAgent(e,!0)})),this.loadConversationFromCacheIfExists(),this.isOpen||this.pipActive?(this.chatContainer.style.display="flex",this.openChatButton.style.display="none"):(this.chatContainer.style.display="none",this.openChatButton.style.display="block")}popoutChat(){window.open(window.location.href,"Agent Chat Popout","width=350,height=515,toolbar=0,location=0,menubar=0,status=0,scrollbars=0,resizable=0")}selectAgent(e,t){e&&(1==t&&localStorage.setItem("selectedAgent",e),this.loomlayConfig.agentUUID=e,this.requestBody.agent_uuid=e,this.chatMessages.innerHTML="",this.agentDropdownContainer.style.display="none",this.loadConversationFromCacheIfExists())}replaceLoomlayAction(){var e=document.getElementsByTagName("loomlay-action");if(window.context=this,e&&0<e.length)for(var t=0;t<e.length;t++){var s,o,n,a=e[t];-1<a.innerHTML.indexOf("<button")||-1<a.innerHTML.indexOf("<a")||(s=a.getAttribute("type"),a.getAttribute("action"),o=a.getAttribute("value"),n=a.innerHTML,"btn"!=s&&"btn-sycnh"!=s||(a.innerHTML="<button class='replybutton' onclick=\"context.sendStartMessage('"+o+"')\">"+n+"</button>"),"btn-asynch"==s&&(a.innerHTML="<button class='replybutton' onclick=\"context.sendAsynchStartMessage('"+o+"', this)\">"+n+"</button>"),"link"!=s&&"link-sycnh"!=s||(a.innerHTML="<a href='#' onclick=\"context.sendStartMessage('"+o+"')\">"+n+"</a>"),"link-asynch"==s&&(a.innerHTML="<a href='#' onclick=\"context.sendAsynchStartMessage('"+o+"', this)\">"+n+"</a>"))}}sendStartMessage(e){this.sendMessage(e),this.chatContainer.style.display="flex",this.openChatButton.style.display="none"}sendAsynchStartMessage(e,t){var s=t.innerHTML;t.innerHTML="Processing...",context.openChatButton.innerHTML="<img src='https://cdn.jsdelivr.net/gh/loomlayorg/widget-public@main/images/ripples.svg'></img>";this.sendMessage(e,function(e){e.chatContainer.style.display="flex",e.openChatButton.style.display="none",e.openChatButton.innerHTML="<img src='https://cdn.jsdelivr.net/gh/loomlayorg/widget-public@main/images/chat_button.svg'></img>",t.innerHTML=s})}populateAgentDropdownFromHTML(){var e=this.querySelector("agents");e?(e=e.querySelectorAll("agent"))&&0!==e.length?e.forEach(e=>{var t,e={agent_uuid:e.getAttribute("uuid"),agent_name:e.getAttribute("name"),agent_description:e.getAttribute("description")};e.agent_uuid&&e.agent_name&&(this.agentList.push(e),(t=document.createElement("option")).value=e.agent_uuid,t.textContent=e.agent_name,this.agentDropdown.appendChild(t))}):console.warn("No <agent> tags found within <agents>."):console.warn("No <agents> tag found in loomlay-chat element.")}hideInitialPrompt=()=>{var e=this.shadow.getElementById("defaultbackground");e&&e.remove()};sendMessage(e,s){var t,e=e||this.messageInput.value;""!==e.trim()&&(this.requestBody.continue=this.continueCheckbox.checked,this.requestBody.context=e,this.appendMessage("user",e,!0),this.messageInput.value="",this.appendAgentTypingMessage(),e={method:"POST",headers:{"Content-Type":"application/json","X-Auth-Token":this.loomlayConfig.authToken},body:JSON.stringify(this.requestBody)},t=this.loomlayConfig.apiEndpoint,this.extraLoggingEnabled&&(console.groupCollapsed("API Request Details"),console.log("Request URL:",t),console.log("Request Method:",e.method),console.log("Request Headers:",e.headers),console.log("Request Body:",this.requestBody),console.groupEnd()),this.setWaitingMessages(),fetch(t,e).then(e=>{if(this.removeAgentTypingMessage(),this.extraLoggingEnabled&&(console.groupCollapsed("API Response Details"),console.log("Response Status:",e.status),console.log("Response Headers:",e.headers)),e.ok)return e.json().then(e=>(this.extraLoggingEnabled&&(console.log("Response Body (JSON):",e),console.groupEnd()),e));throw this.extraLoggingEnabled&&(console.error("HTTP Error Response:",e),console.groupEnd()),new Error("HTTP error! status: "+e.status)}).then(e=>{var t=e.agent_message||"No response from agent";this.requestBody.key=e.key,this.addKeyToConversationCache(e.key),this.appendMessage("agent",t,!0),this.clearWaitingMessages(),s&&s(this)}).catch(e=>{s&&s(this),this.clearWaitingMessages(),this.removeAgentTypingMessage(),this.extraLoggingEnabled&&(console.groupCollapsed("Fetch Error Details"),console.error("Fetch Error:",e),console.groupEnd()),console.error("Error:",e),this.appendErrorMessage("Error getting a response from Loomlay. Please check your connection and try again.")}),this.hideInitialPrompt())}setWaitingMessages(){if(this.autoResponse)for(var t=this,s=0;s<this.automaticeMessages.length;s++){let e=this.automaticeMessages[s];this.waitingMessages.push(setTimeout(function(){t.callWithMessage(e.message)},e.timeout))}}clearWaitingMessages(){if(0<this.waitingMessages.length){for(var e=0;e<this.waitingMessages.length;e++)clearTimeout(this.waitingMessages[e]);this.waitingMessages=[]}this.clearAutomaticMessages()}callWithMessage(e){this.clearAutomaticMessages(),this.appendMessage("agent",e,!1,"automatic")}clearAutomaticMessages(){for(var e=0;e<this.chatMessages.childNodes.length;e++)this.chatMessages.childNodes[e].id&&-1<this.chatMessages.childNodes[e].id.indexOf("automatic")&&this.chatMessages.removeChild(this.chatMessages.childNodes[e])}convertToCorrectHtml(e){e=e.replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>").replace(/\n/g,"<br>");return this.replacePatternWithElements(e)}appendMessage(e,t,s,o){!0===s&&this.addMessageToCache(e,t);s=document.createElement("div"),o&&s.setAttribute("id",o+"_container"),s.classList.add("message-container",e+"-message-container"),o=document.createElement("div");o.classList.add("message",e+"-message"),o.innerHTML=this.convertToCorrectHtml(t),s.appendChild(o),this.chatMessages.appendChild(s),this.chatMessages.scrollTop=this.chatMessages.scrollHeight,this.removeErrorMessage()}addMessageToCache(e,t){var s=JSON.parse(localStorage.getItem("cachedConversation_"+this.loomlayConfig.agentUUID));(s=s||{key:null,messages:null}).messages||(s.messages=[]),s.messages.push({sender:e,message:t}),localStorage.setItem("cachedConversation_"+this.loomlayConfig.agentUUID,JSON.stringify(s))}addKeyToConversationCache(e){var t=JSON.parse(localStorage.getItem("cachedConversation_"+this.loomlayConfig.agentUUID));t.key=e,localStorage.setItem("cachedConversation_"+this.loomlayConfig.agentUUID,JSON.stringify(t))}removeConversationFromCache(){localStorage.removeItem("cachedConversation_"+this.loomlayConfig.agentUUID),this.requestBody={agent_uuid:this.loomlayConfig.agentUUID,context:null,extra_context:null,continue:!0,key:null},this.chatMessages.innerHTML='<div id="defaultbackground"><img src="https://cdn.jsdelivr.net/gh/loomlayorg/widget-public@main/images/default.svg"></img><br/><br/><span>Begin conversation with Loomlay agents</span></div>'}navigate(e){window.location.href=e}createElement(e,t,s,o){let n="open-current"==t?"onclick =\"window.open('"+s+"', '_self')\"":"open-new"==t?"onclick =\"window.open('"+s+"', '_blank')\"":"prompt"==t?"onclick =\"context.sendStartMessage('"+s+"')\"":"";return"btn"===e?"<button class='replybutton'"+n+">"+o+"</button>":"link"===e?"<a href='#' "+n+">"+o+"</a>":(console.error('Invalid type. Use "btn" for button or "link" for anchor tag.'),null)}replacePatternWithElements(a){return a.replace(/\[(btn|link)\|(.*?)\|(.*?)\|(.*?)\]/g,(e,t,s,o,n)=>{t=this.createElement(t,s,o,n);return t||a})}loadConversationFromCacheIfExists(){var e=JSON.parse(localStorage.getItem("cachedConversation_"+this.loomlayConfig.agentUUID));if(e&&e.messages&&0<e.messages.length){this.requestBody.key=e.key,this.hideInitialPrompt();for(var t=0;t<e.messages.length;t++){var s=e.messages[t];this.appendMessage(s.sender,s.message,!1)}}else this.chatMessages.innerHTML='<div id="defaultbackground"><img src="https://cdn.jsdelivr.net/gh/loomlayorg/widget-public@main/images/default.svg"></img><br/><br/><span>Begin conversation with Loomlay agents</span></div>'}appendAgentTypingMessage(){var e=document.createElement("div"),t=(e.classList.add("message-container","agent-message-container","agent-typing-message"),e.id="agent-typing-message-container",document.createElement("div"));t.classList.add("message","agent-message"),t.innerHTML='<div id="agent-typing-dots"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>',e.appendChild(t),this.chatMessages.appendChild(e),this.chatMessages.scrollTop=this.chatMessages.scrollHeight}removeAgentTypingMessage(){var e=this.chatMessages.querySelector("#agent-typing-message-container");e&&this.chatMessages.removeChild(e)}appendErrorMessage(e){this.removeErrorMessage(),this.removeAgentTypingMessage();var t=document.createElement("div"),s=(t.classList.add("message-container","agent-message-container","error-message"),document.createElement("div"));s.classList.add("message","agent-message"),s.textContent=e,t.appendChild(s),this.chatMessages.appendChild(t),this.chatMessages.scrollTop=this.chatMessages.scrollHeight}removeErrorMessage(){var e=this.chatMessages.querySelector(".error-message");e&&this.chatMessages.removeChild(e)}getFullConversation(){let t="";return this.chatMessages.querySelectorAll(".message").forEach(e=>{e.classList.contains("error-message")||e.parentNode.classList.contains("agent-typing-message-container")||(t+=e.textContent+"\n")}),t.trim()}}customElements.define("loomlay-chat",e)}();
+            `;
+
+            this.chatContainer = this.shadow.querySelector("#chat-container");
+            this.chatHeader = this.shadow.querySelector("#chat-header");
+            this.chatMessages = this.shadow.querySelector("#chat-messages");
+            this.messageInput = this.shadow.querySelector("#message-input");
+            this.sendButton = this.shadow.querySelector("#send-button");
+            this.closeChatButton = this.shadow.querySelector("#close-chat-button");
+            this.clearChatButton = this.shadow.querySelector("#clear-chat-button");
+            this.popOutChatButton = this.shadow.querySelector("#popout-chat-button");
+            this.continueCheckbox = this.shadow.querySelector("#continue-checkbox");
+            this.openChatButton = this.shadow.querySelector("#open-chat-button");
+            this.settingsButton = this.shadow.querySelector("#settings-button");
+            this.agentDropdownContainer = this.shadow.querySelector("#agent-dropdown-container");
+            this.agentDropdown = this.shadow.querySelector("#agent-dropdown");
+
+            this.messageInput.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter') {
+                    this.sendMessage();
+                    event.preventDefault(); // Prevent default form submission
+                }
+            });
+
+            this.closeChatButton.addEventListener("click", () => {
+                this.chatContainer.style.display = "none";
+                this.openChatButton.style.display = "flex";
+                if (this.agentDropdownContainer) {
+                    this.agentDropdownContainer.style.display = "none"; // Hide dropdown if open
+                }
+            });
+
+            this.popOutChatButton.addEventListener('click', async () => {
+                if ("documentPictureInPicture" in window == true) {
+
+                    const chat = document.querySelector("#block");
+
+                    const pipOptions = { // Or videoElement.clientWidth / videoElement.clientHeight if you want video aspect
+                        width: 380,
+                        height: 500,
+                        lockAspectRatio: true,
+                        copyStyleSheets: true,
+                    };
+                    // Open a Picture-in-Picture window.
+                    const pipWindow = await documentPictureInPicture.requestWindow(pipOptions);
+
+                    // Move the player to the Picture-in-Picture window.
+
+                    // Copy style sheets over from the initial document
+                    [...document.styleSheets].forEach((styleSheet) => {
+                        try {
+                            const cssRules = [...styleSheet.cssRules].map((rule) => rule.cssText).join("");
+                            const style = document.createElement("style");
+
+                            style.textContent = cssRules;
+                            pipWindow.document.head.appendChild(style);
+                        } catch (e) {
+                            const link = document.createElement("link");
+
+                            link.rel = "stylesheet";
+                            link.type = styleSheet.type;
+                            link.media = styleSheet.media;
+                            link.href = styleSheet.href;
+                            pipWindow.document.head.appendChild(link);
+                        }
+                    });
+                    this.pipActive = true;
+                    pipWindow.document.body.append(chat);
+
+                    pipWindow.addEventListener("pagehide", (event) => {
+                        const playerContainer = document.body; // Changed to document.body as it's a popout
+                        const pipPlayer = event.target.querySelector("#block");
+                        this.pipActive = false;
+                        playerContainer.append(pipPlayer);
+                    });
+
+                }
+                else {
+                    this.popoutChat();
+                }
+            });
+
+            this.clearChatButton.addEventListener("click", () => {
+                this.removeConversationFromCache();
+            });
+
+            this.openChatButton.addEventListener("click", () => {
+                this.chatContainer.style.display = "flex";
+                this.openChatButton.style.display = "none";
+
+                var cachedConversation = JSON.parse(localStorage.getItem("cachedConversation"));
+                if (this.isOpen !== true && this.initialMessage != "" && cachedConversation == null) {
+                    this.sendMessage(this.initialMessage);
+                }
+            });
+
+            this.sendButton.addEventListener("click", () => this.sendMessage());
+
+            if (this.settingsEnabled && this.settingsButton && this.agentDropdownContainer) {
+                this.settingsButton.addEventListener("click", () => {
+                    this.agentDropdownContainer.style.display = this.agentDropdownContainer.style.display === "block" ? "none" : "block";
+                });
+            }
+
+            if (this.settingsEnabled && this.agentDropdown) {
+                this.populateAgentDropdownFromHTML();
+                if (this.agentList && this.agentList.length > 1) {
+                    var selectedAgent = localStorage.getItem('selectedAgent');
+                    if (selectedAgent != null) {
+                        this.agentDropdown.value = selectedAgent;
+                    }
+                    else {
+                        this.agentDropdown.value = this.agentList[0].agent_uuid;
+                    }
+                }
+
+                this.agentDropdown.addEventListener('change', (event) => {
+                    const selectedAgentUUID = event.target.value;
+                    this.selectAgent(selectedAgentUUID, true);
+                });
+            }
+
+            this.loadConversationFromCacheIfExists();
+
+            if (this.isOpen || this.pipActive) {
+                this.chatContainer.style.display = "flex";
+                this.openChatButton.style.display = "none";
+            }
+            else {
+                this.chatContainer.style.display = "none";
+                this.openChatButton.style.display = "block";
+            }
+        }
+
+
+        popoutChat() {
+            window.open(
+                window.location.href,
+                "Agent Chat Popout",
+                "width=350,height=515,toolbar=0,location=0,menubar=0,status=0,scrollbars=0,resizable=0"
+            );
+        }
+
+        selectAgent(selectedAgentUUID, putToCache) {
+            if (selectedAgentUUID) {
+                if (putToCache == true) {
+                    localStorage.setItem("selectedAgent", selectedAgentUUID);
+                }
+                this.loomlayConfig.agentUUID = selectedAgentUUID;
+                this.requestBody.agent_uuid = selectedAgentUUID;
+                this.chatMessages.innerHTML = '';
+                this.agentDropdownContainer.style.display = "none";
+                this.loadConversationFromCacheIfExists();
+            }
+        }
+
+        replaceLoomlayAction() {
+            var elements = document.getElementsByTagName("loomlay-action");
+
+            window.context = this;
+            if (elements && elements.length > 0) {
+                for (var i = 0; i < elements.length; i++) {
+                    var element = elements[i];
+                    if (element.innerHTML.indexOf("<button") > -1 || element.innerHTML.indexOf("<a") > -1) {
+                        continue;
+                    };
+                    var type = element.getAttribute("type");
+                    var action = element.getAttribute("action");
+                    var value = element.getAttribute("value");
+                    var text = element.innerHTML;
+                    if (type == "btn" || type == "btn-sycnh") {
+                        var button = "<button class='replybutton' onclick=\"context.sendStartMessage('" + value + "')\">" + text + "</button>";
+                        element.innerHTML = button;
+                    }
+                    if (type == "btn-asynch") {
+                        var button = "<button class='replybutton' onclick=\"context.sendAsynchStartMessage('" + value + "', this)\">" + text + "</button>";
+                        element.innerHTML = button;
+                    }
+
+                    if (type == "link" || type == "link-sycnh") {
+                        var a = "<a href='#' onclick=\"context.sendStartMessage('" + value + "')\">" + text + "</a>";
+                        element.innerHTML = a;
+                    }
+
+                    if (type == "link-asynch") {
+                        var a = "<a href='#' onclick=\"context.sendAsynchStartMessage('" + value + "', this)\">" + text + "</a>";
+                        element.innerHTML = a;
+                    }
+                }
+            }
+        }
+
+        sendStartMessage(message) {
+            this.sendMessage(message);
+            this.chatContainer.style.display = "flex";
+            this.openChatButton.style.display = "none";
+        }
+
+        sendAsynchStartMessage(message, button) {
+            var originalText = button.innerHTML;
+            button.innerHTML = "Processing...";
+            context.openChatButton.innerHTML = `<img src="${this.cdnUrl}/images/ripples.svg"></img>`;
+            var callback = function callbackAsynchStartMessage(context) {
+                context.chatContainer.style.display = "flex";
+                context.openChatButton.style.display = "none";
+                context.openChatButton.innerHTML = `<img src="${this.cdnUrl}/images/chat_button.svg"></img>`;
+                button.innerHTML = originalText;
+            };
+            this.sendMessage(message, callback);
+        }
+
+
+
+
+        populateAgentDropdownFromHTML() {
+            const agentsElement = this.querySelector('agents');
+            if (!agentsElement) {
+                console.warn("No <agents> tag found in loomlay-chat element.");
+                return;
+            }
+
+            const agentElements = agentsElement.querySelectorAll('agent');
+            if (!agentElements || agentElements.length === 0) {
+                console.warn("No <agent> tags found within <agents>.");
+                return;
+            }
+
+            agentElements.forEach(agentElem => {
+                const agent = {
+                    agent_uuid: agentElem.getAttribute('uuid'),
+                    agent_name: agentElem.getAttribute('name'),
+                    agent_description: agentElem.getAttribute('description')
+                };
+                if (agent.agent_uuid && agent.agent_name) {
+                    this.agentList.push(agent);
+
+                    const option = document.createElement('option');
+                    option.value = agent.agent_uuid;
+                    option.textContent = agent.agent_name;
+                    this.agentDropdown.appendChild(option);
+                }
+            });
+        }
+
+
+        hideInitialPrompt = () => {
+            const promptElement = this.shadow.getElementById('defaultbackground');
+            if (promptElement) {
+                promptElement.remove();
+            }
+        };
+
+        sendMessage(message, callback) {
+            const userMessage = message ? message : this.messageInput.value;
+            if (userMessage.trim() === "") return;
+
+            this.requestBody.continue = this.continueCheckbox.checked;
+            let contextMessage = userMessage;
+
+
+            this.requestBody.context = contextMessage;
+
+            this.appendMessage("user", userMessage, true);
+            this.messageInput.value = "";
+
+            this.appendAgentTypingMessage();
+
+            const fetchOptions = {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-Auth-Token": this.loomlayConfig.authToken,
+                },
+                body: JSON.stringify(this.requestBody),
+            };
+
+            const apiUrl = this.loomlayConfig.apiEndpoint;
+
+            if (this.extraLoggingEnabled) {
+                console.groupCollapsed('API Request Details');
+                console.log('Request URL:', apiUrl);
+                console.log('Request Method:', fetchOptions.method);
+                console.log('Request Headers:', fetchOptions.headers);
+                console.log('Request Body:', this.requestBody);
+                console.groupEnd();
+            }
+
+            this.setWaitingMessages();
+
+            fetch(apiUrl, fetchOptions)
+                .then((response) => {
+                    this.removeAgentTypingMessage();
+
+                    if (this.extraLoggingEnabled) {
+                        console.groupCollapsed('API Response Details');
+                        console.log('Response Status:', response.status);
+                        console.log('Response Headers:', response.headers);
+                    }
+
+                    if (!response.ok) {
+                        if (this.extraLoggingEnabled) {
+                            console.error('HTTP Error Response:', response);
+                            console.groupEnd();
+                        }
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    return response.json().then(data => {
+                        if (this.extraLoggingEnabled) {
+                            console.log('Response Body (JSON):', data);
+                            console.groupEnd();
+                        }
+                        return data;
+                    });
+                })
+                .then((data) => {
+                    const agentReply = data.agent_message || "No response from agent";
+                    this.requestBody.key = data.key;
+                    this.addKeyToConversationCache(data.key);
+                    this.appendMessage("agent", agentReply, true);
+                    this.clearWaitingMessages();
+
+                    if (callback) {
+                        callback(this);
+                    }
+
+                })
+                .catch((error) => {
+                    if (callback) {
+                        callback(this);
+                    }
+                    this.clearWaitingMessages();
+                    this.removeAgentTypingMessage();
+                    if (this.extraLoggingEnabled) {
+                        console.groupCollapsed('Fetch Error Details');
+                        console.error('Fetch Error:', error);
+                        console.groupEnd();
+                    }
+                    console.error("Error:", error);
+                    this.appendErrorMessage("Error getting a response from Loomlay. Please check your connection and try again.");
+                });
+
+            this.hideInitialPrompt();
+        }
+
+
+        setWaitingMessages() {
+            if (this.autoResponse) {
+                var context = this;
+                for (var i = 0; i < this.automaticeMessages.length; i++) {
+                    let messageConfig = this.automaticeMessages[i];
+                    this.waitingMessages.push(setTimeout(function () { context.callWithMessage(messageConfig.message) }, messageConfig.timeout));
+                }
+            }
+        }
+
+        clearWaitingMessages() {
+            if (this.waitingMessages.length > 0) {
+                for (var i = 0; i < this.waitingMessages.length; i++) {
+                    clearTimeout(this.waitingMessages[i]);
+                }
+                this.waitingMessages = [];
+            }
+            this.clearAutomaticMessages();
+        }
+
+        callWithMessage(message) {
+            this.clearAutomaticMessages();
+            this.appendMessage("agent", message, false, "automatic");
+        }
+
+        clearAutomaticMessages() {
+            for (var i = 0; i < this.chatMessages.childNodes.length; i++) {
+                if (this.chatMessages.childNodes[i].id && this.chatMessages.childNodes[i].id.indexOf("automatic") > -1) {
+                    this.chatMessages.removeChild(this.chatMessages.childNodes[i]);
+                }
+            }
+        }
+
+        convertToCorrectHtml(message) {
+            var result = message.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+            result = this.replacePatternWithElements(result)
+            return result;
+        }
+
+        appendMessage(sender, message, shouldBeAddedToCache, id) {
+            if (shouldBeAddedToCache === true) {
+                this.addMessageToCache(sender, message);
+            }
+            const messageContainer = document.createElement('div');
+            if (id) {
+                messageContainer.setAttribute("id", id + "_container");
+            }
+            messageContainer.classList.add('message-container', `${sender}-message-container`);
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', `${sender}-message`);
+            messageDiv.innerHTML = this.convertToCorrectHtml(message);
+
+            messageContainer.appendChild(messageDiv);
+            this.chatMessages.appendChild(messageContainer);
+            this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+            this.removeErrorMessage();
+        }
+
+        addMessageToCache(sender, message) {
+            var cachedConversation = JSON.parse(localStorage.getItem("cachedConversation_" + this.loomlayConfig.agentUUID));
+            if (!cachedConversation) {
+                cachedConversation = {
+                    "key": null,
+                    "messages": null
+                }
+            }
+
+            if (!cachedConversation.messages) {
+                cachedConversation.messages = [];
+            }
+
+            cachedConversation.messages.push({
+                "sender": sender,
+                "message": message,
+            });
+
+            localStorage.setItem("cachedConversation_" + this.loomlayConfig.agentUUID, JSON.stringify(cachedConversation));
+        }
+
+        addKeyToConversationCache(key) {
+            var cachedConversation = JSON.parse(localStorage.getItem("cachedConversation_" + this.loomlayConfig.agentUUID));
+            cachedConversation.key = key;
+            localStorage.setItem("cachedConversation_" + this.loomlayConfig.agentUUID, JSON.stringify(cachedConversation));
+        }
+
+        removeConversationFromCache() {
+            localStorage.removeItem("cachedConversation_" + this.loomlayConfig.agentUUID);
+            this.requestBody = {
+                agent_uuid: this.loomlayConfig.agentUUID,
+                context: null,
+                extra_context: null,
+                continue: true,
+                key: null,
+                extra_params: null,
+            };
+            this.chatMessages.innerHTML = `<div id="defaultbackground"><img src="${this.cdnUrl}/images/default.svg"></img><br/><br/></div>`;
+
+        }
+
+        navigate(url) {
+            window.location.href = url;
+        }
+
+        createElement(type, action, context, label) {
+            let onClick = "";
+            if (action == "prompt") {
+                onClick = "onclick =\"context.sendStartMessage('" + context + "')\"";
+            }
+            if (action == "open-new") {
+                onClick = "onclick =\"window.open('" + context + "', '_blank')\"";
+            }
+            if (action == "open-current") {
+                onClick = "onclick =\"window.open('" + context + "', '_self')\"";
+            }
+
+            if (type === 'btn') {
+                return "<button class='replybutton'" + onClick + ">" + label + "</button>";
+            } else if (type === 'link') {
+                return "<a href='#' " + onClick + ">" + label + "</a>";
+            } else {
+                console.error('Invalid type. Use "btn" for button or "link" for anchor tag.');
+                return null;
+        }
+    }
+
+    replacePatternWithElements(text) {
+        return text.replace(/\[(btn|link)\|(.*?)\|(.*?)\|(.*?)\]/g, (match, type, action, context, label) => {
+            var element = this.createElement(type, action, context, label);
+            return element ? element : text;
+        });
+    }
+
+        loadConversationFromCacheIfExists() {
+            var cachedConversation = JSON.parse(localStorage.getItem("cachedConversation_" + this.loomlayConfig.agentUUID));
+            if (cachedConversation && cachedConversation.messages && cachedConversation.messages.length > 0) {
+                this.requestBody.key = cachedConversation.key;
+                this.hideInitialPrompt();
+                for (var i = 0; i < cachedConversation.messages.length; i++) {
+                    var cachedMessage = cachedConversation.messages[i];
+                    this.appendMessage(cachedMessage.sender, cachedMessage.message, false);
+                }
+            }
+            else {
+                this.chatMessages.innerHTML = `<div id="defaultbackground"><img src="${this.cdnUrl}/images/default.svg"></img><br/><br/></div>`;
+            }
+        }
+
+        appendAgentTypingMessage() {
+            const messageContainer = document.createElement('div');
+            messageContainer.classList.add('message-container', 'agent-message-container', 'agent-typing-message');
+            messageContainer.id = 'agent-typing-message-container';
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', 'agent-message');
+            messageDiv.innerHTML = `<div id="agent-typing-dots"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>`;
+            messageContainer.appendChild(messageDiv);
+
+            this.chatMessages.appendChild(messageContainer);
+            this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+        }
+
+        removeAgentTypingMessage() {
+            const typingMessage = this.chatMessages.querySelector('#agent-typing-message-container');
+            if (typingMessage) {
+                this.chatMessages.removeChild(typingMessage);
+            }
+        }
+
+
+        appendErrorMessage(errorMessage) {
+            this.removeErrorMessage();
+            this.removeAgentTypingMessage();
+            const errorDiv = document.createElement('div');
+            errorDiv.classList.add('message-container', 'agent-message-container', 'error-message');
+
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', 'agent-message');
+            messageDiv.textContent = errorMessage;
+            errorDiv.appendChild(messageDiv);
+
+            this.chatMessages.appendChild(errorDiv);
+            this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+        }
+
+        removeErrorMessage() {
+            const existingError = this.chatMessages.querySelector('.error-message');
+            if (existingError) {
+                this.chatMessages.removeChild(existingError);
+            }
+        }
+
+
+        getFullConversation() {
+            let fullConversation = "";
+            const messages = this.chatMessages.querySelectorAll('.message');
+            messages.forEach(message => {
+                if (!message.classList.contains('error-message') && !message.parentNode.classList.contains('agent-typing-message-container')) {
+                    fullConversation += message.textContent + "\n";
+                }
+            });
+            return fullConversation.trim();
+        }
+    }
+
+    customElements.define('loomlay-chat', LoomlayChatWidget);
+
+})();
