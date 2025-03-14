@@ -61,6 +61,11 @@
   gap: 6px;
 }
 
+.header-title img
+{
+  max-height: 24px
+}
+
 .header-button{
 display: flex; 
 align-items: center;  
