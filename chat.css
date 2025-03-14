@@ -195,7 +195,7 @@ border-radius: 6px;
 
 .agent-message {
       color: var(--agent-text-color);
-      display: flex;
+    
       flex-wrap: wrap;
       gap: 8px;
       padding: 4px;
