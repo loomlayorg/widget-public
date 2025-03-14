@@ -38,7 +38,7 @@
   bottom: 20px;
   right: 20px;
   width: 22vw;
-  min-width: 360px;
+  min-width: 340px;
   height: var(--chat-height);
   background-color: var(--chat-background);
   border: var(--chat-border);
@@ -76,18 +76,24 @@ border-radius: 6px;
 
 .chat-container.pip-active-inline .header-button#close-chat-button,.chat-container.pip-active-inline .header-button#popout-chat-button {
   display: none !important;
+
+}
+
+.chat-container.pip-active-inline{
+  width: 100%!important;
+  height: 120svh!important;
 }
 
 
-@media (max-width: 1440px) {
+@media (max-width: 720px) {
   #chat-container {
-    width: 100vw;
+    width: 80%;
   }
 }
 
-@media (max-width: 1440px) {
+@media (max-width: 720px) {
   #chat-container {
-    height: 100vh;
+    height: 80svh;
   }
 }
 
@@ -163,6 +169,7 @@ border-radius: 6px;
 .user-message-container {
   justify-content: flex-end;
   margin-right: 0;
+  margin-left: 10%;
 }
 
 .agent-message-container {
@@ -172,7 +179,7 @@ border-radius: 6px;
 .message {
   padding: var(--message-padding);
   border-radius: var(--message-border-radius);
-  max-width: 75%;
+  max-width: 90%;
   word-break: break-word;
   font-size: 15px;
   line-height: 1.4;
@@ -512,7 +519,7 @@ margin-left: 5px;
   position: absolute;
   top: 110%;
   right: 15px;
-  background-color: white;
+  background-color: var(--chat-background);
   border: var(--chat-border);
   border-radius: var(--chat-border-radius);
   box-shadow: var(--chat-shadow);
@@ -525,10 +532,12 @@ margin-left: 5px;
   width: 200px !important;
   /* Adjust as needed */
   padding: 0px 8px;
-  border: 1px solid #ccc;
+  border: 1px solid #cccccc1e;
   border-radius: 5px;
   font-size: 15px;
   outline: none;
+  color: #fff;
+  background: #cccccc0d;
 }
 
 #agent-dropdown option {

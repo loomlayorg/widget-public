@@ -56,14 +56,14 @@
                     <input type="checkbox" id="continue-checkbox" class="memory-checkbox" style="background-color: ${this.config.switchButtonColor};" ${e} >
                     <label for="continue-checkbox" class="memory-checkbox-label">Context</label>
                 </div>
-            `}_getSettingsButtonHtml(){return console.log("_getSettingsButtonHtml - isPipActive:",this.isPipActive),`<button id="settings-button" class="header-button" style="display: ${this.isPipActive?"none":"flex"}" aria-label="Settings">
-                        <img src="${this.cdnUrl}/images/settings.svg" alt="Settings">
-                    </button>`}_getPopOutChatButtonHtml(){console.log(" _getPopOutChatButtonHtml - isPipActive:",this.isPipActive);var t=this.isPipActive?"none":"flex";return`<button id="popout-chat-button" class="header-button" style="background-color: ${this.config.closeButtonColor}; display: ${t}" aria-label="PopOut Chat">
-                        <img src="${this.cdnUrl}/images/open_new_window.svg" alt="Pop Out Chat">
-                    </button>`}_getClearChatButtonHtml(){return`<button id="clear-chat-button" class="header-button" style="background-color: ${this.config.closeButtonColor}" aria-label="Clear Chat">
-                        <img src="${this.cdnUrl}/images/tabler_refresh.svg" alt="Clear Chat">
-                    </button>`}_getCloseChatButtonHtml(){console.log("_getCloseChatButtonHtml - isPipActive:",this.isPipActive);var t=this.isPipActive?"none":"flex";return`<button id="close-chat-button" class="header-button" style="background-color: ${this.config.closeButtonColor}; display: ${t}" aria-label="Close Chat">
-                        <img src="${this.cdnUrl}/images/close.svg" alt="Close Chat">
+            `}_getSettingsButtonHtml(){return console.log("_getSettingsButtonHtml - isPipActive:",this.isPipActive),`<button id="settings-button" class="header-button" style="display: ${this.isPipActive?"none":"flex"}" aria-label="Settings" title="Settings">
+                        <img src="${this.cdnUrl}/images/settings.svg" >
+                    </button>`}_getPopOutChatButtonHtml(){console.log(" _getPopOutChatButtonHtml - isPipActive:",this.isPipActive);var t=this.isPipActive?"none":"flex";return`<button id="popout-chat-button" class="header-button" style="background-color: ${this.config.closeButtonColor}; display: ${t}" aria-label="PopOut Chat" title="Pop Out Chat">
+                        <img src="${this.cdnUrl}/images/open_new_window.svg" >
+                    </button>`}_getClearChatButtonHtml(){return`<button id="clear-chat-button" class="header-button" style="background-color: ${this.config.closeButtonColor}" aria-label="Clear Chat" title="Clear Chat">
+                        <img src="${this.cdnUrl}/images/tabler_refresh.svg" >
+                    </button>`}_getCloseChatButtonHtml(){console.log("_getCloseChatButtonHtml - isPipActive:",this.isPipActive);var t=this.isPipActive?"none":"flex";return`<button id="close-chat-button" class="header-button" style="background-color: ${this.config.closeButtonColor}; display: ${t}" aria-label="Close Chat" title="Close Chat">
+                        <img src="${this.cdnUrl}/images/close.svg" >
                     </button>`}_getAgentDropdownHtml(){return`
                 <div id="agent-dropdown-container" class="agent-dropdown-container">
                     <select class="mainselection" id="agent-dropdown">
