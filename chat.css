@@ -50,6 +50,15 @@
   z-index: 1000;
 }
 
+.chat-container.pip-active-inline {
+  border-radius: 0 !important
+}
+
+.chat-container.pip-active-inline .header-button#close-chat-button,.chat-container.pip-active-inline .header-button#popout-chat-button {
+  display: none !important;
+}
+
+
 @media (max-width: 720px) {
   #chat-container {
     width: auto;
@@ -372,6 +381,7 @@
     border-radius: 25px;
     background-color: #2196F3;
     margin-top: 8px;
+    margin-right: 5px;
 }
 
 
@@ -391,6 +401,7 @@ select {
     border-radius: 25px;
     background-color: #2196F3;
     margin-top: 8px;
+    margin-right: 5px;
 
     background-color: var(--chat-button-background);
     border: none;
@@ -407,10 +418,39 @@ select {
     box-shadow: var(--chat-shadow);
     transition: background-color 0.3s ease;
 }
+.replylink {
+  color: #25ffc1;
+  margin-top: 8px;
+  margin-right: 5px;
+  cursor: pointer;
+  /* Makes it behave like a link */
+  text-decoration: underline;
+  /* Adds an underline to resemble a link */
+}
+
+.replylink:hover {
+  color: #1abc9c;
+  /* Slightly different color on hover */
+  text-decoration: none;
+  /* Removes underline on hover */
+}
 
 #send-button:hover {
   background-color: var(--chat-button-hover-background);
   opacity: 0.8;
+}
+#cr{
+  display: flex;
+  justify-content: center;
+  color: white;
+  font-size: 10px;
+  margin-bottom:5px;
+}
+
+#cr a
+{
+color: #25ffc1;
+margin-left: 5px;
 }
 
 #send-button:active {
@@ -420,7 +460,7 @@ select {
 
 
 .error-message {
-  color: #dc3545;
+  color: #25ffc1;
   background-color: #f8d7da;
   border: 1px solid #f5c6cb;
   padding: 10px 15px;
