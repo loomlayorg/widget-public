@@ -33,7 +33,28 @@
   --scrollbar-thumb-color: #555;
 }
 
+ .highlighted {
+   border: 2px solid red !important;
+   transition: border-color 0.5s ease-out;
+ }
 
+ .ai-tooltip {
+   position: absolute;
+   background-color: rgba(0, 0, 0, 0.8);
+   color: #fff;
+   padding: 8px 12px;
+   border-radius: 5px;
+   font-size: 14px;
+   white-space: nowrap;
+   z-index: 9999;
+   pointer-events: none;
+   opacity: 0;
+   transition: opacity 0.3s ease-in-out;
+ }
+
+ .ai-tooltip.show {
+   opacity: 1;
+ }
 #chat-container {
   bottom: 20px;
   right: 20px;
