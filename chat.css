@@ -46,10 +46,17 @@
    border-radius: 5px;
    font-size: 14px;
    white-space: nowrap;
+   /* Keep nowrap for single line tooltips, but limit width */
    z-index: 9999;
    pointer-events: none;
    opacity: 0;
    transition: opacity 0.3s ease-in-out;
+   max-width: 80vw;
+   /* Example: Limit width to 80% of viewport width */
+   overflow: hidden;
+   /* Prevent content overflow */
+   text-overflow: ellipsis;
+   /* Add ellipsis if text is still too long after max-width and nowrap */
  }
 
  .ai-tooltip.show {
