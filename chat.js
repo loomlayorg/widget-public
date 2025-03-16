@@ -57,7 +57,7 @@
                  ${this._getStopAllButtonHtml()} 
                 ${this._getCloseChatButtonHtml()}
             `}_getStopAllButtonHtml(){return`<button id="stop-all-button" class="header-button" style="background-color: ${this.config.closeButtonColor}" aria-label="Stop All" title="Stop All Executions">
-                        <img src="images/stop.svg" >
+                        <img src="${this.cdnUrl}/images/stop.svg" >
                     </button>`}_getMemoryCheckboxHtml(t,e){return`
                 <div class="memory-container" style="display: ${t};">
                     <input type="checkbox" id="continue-checkbox" class="memory-checkbox" style="background-color: ${this.config.switchButtonColor};" ${e} >
