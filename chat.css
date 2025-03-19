@@ -622,15 +622,7 @@ agents {
     transform: translate(-50%, -50%);
 }
 
-canvas {
-    width: 300px;
-    height: 300px;
-    position: fixed;
-    top: 0;
-    left: 0;
-    background: black;
-    display: none;
-}
+
 
 video {
     width: 200px;
