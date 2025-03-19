@@ -62,6 +62,33 @@
  .ai-tooltip.show {
    opacity: 1;
  }
+
+ .click-feedback {
+   position: absolute;
+   /* Needed for top/left positioning */
+   width: 10px;
+   /* Size of the feedback dot */
+   height: 10px;
+   border-radius: 50%;
+   /* Make it a circle */
+   background-color: rgba(255, 0, 0, 0.7);
+   /* Semi-transparent red color */
+   border: 1px solid white;
+   pointer-events: none;
+   /* Make it non-interactive */
+   opacity: 1;
+   transition: opacity 0.3s ease-out, transform 0.2s ease-out;
+   /* Add transitions for smooth appearance/disappearance */
+   transform: scale(1);
+   /* Initial scale */
+ }
+
+ .click-feedback.fade-out {
+   opacity: 0;
+   /* Fade out */
+   transform: scale(1.5);
+   /* Slightly scale up while fading */
+ }
 #chat-container {
   bottom: 20px;
   right: 20px;
