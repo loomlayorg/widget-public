@@ -2,8 +2,8 @@
   /*--chat-width: 22vw;*/
   --chat-height: 500px;
   --chat-background: #222229;
-  --chat-border: 1px solid #09090a;
-  --chat-border-radius: 10px;
+  --chat-border: 0px solid #09090a;
+  --chat-border-radius: 20px;
   --chat-shadow: 4px 4px 10px rgba(0, 0, 0, 0.15);
   --header-background: #2b2b34;
   --header-border-bottom: 1px solid #13131b;
@@ -13,8 +13,8 @@
   --message-border-radius: 25px;
   --user-bubble-color: #34343f;
   --agent-bubble-color: #1f1f2b;
-  --agent-text-color: #ffffff;
-  --user-text-color: white;
+  --agent-text-color: #ECECED;
+  --user-text-color: #ECECED;
   --chat-button-background: #25ffc1;
   --chat-button-hover-background: #25ffc1;
   --chat-button-active-background: #25ffc1;
@@ -159,8 +159,7 @@ border-radius: 6px;
 }
 
 #chat-header {
-  background-color: var(--header-background);
-  color: var(--header-title-color);
+
   padding: var(--header-padding);
   border-bottom: var(--header-border-bottom);
   font-family : Arial,Helvetica,sans-serif;
@@ -171,6 +170,8 @@ border-radius: 6px;
   align-items: center;
 }
 
+
+
 #chat-header span {
   margin-right: 10px;
 }
@@ -180,11 +181,11 @@ border-radius: 6px;
   align-items: center;
   gap: 4px;
 }
-
+/*
 #close-chat-button {
   margin-left: 24px;
 }
-
+*/
 
 #chat-messages {
   flex-grow: 1;
@@ -255,7 +256,7 @@ border-radius: 6px;
 
 .agent-message {
       color: var(--agent-text-color);
-    
+      display: flex;
       flex-wrap: wrap;
       gap: 8px;
       padding: 4px;
@@ -460,11 +461,16 @@ select {
 }
 
 .replybutton {
-    color: var(--chat-button-background)!important;
+    /*color: var(--chat-button-background)!important;*/
     padding: 8px 20px;
     font-family: Arial, Helvetica, sans-serif;
     border-radius: 16px;
-    border: 2px solid var(--chat-button-background)!important;
+    /*border: 2px solid var(--chat-button-background)!important;*/
+    
+    border: 2px solid #45464A !important;
+    color: #ECECED !important;
+    background-color: #29292C !important;
+       
     background-color: #00000000;
     border: none;
     display: inline-block;
