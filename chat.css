@@ -512,6 +512,7 @@ select {
 #cr{
  /* font-family: Arial, Helvetica, sans-serif;*/
   display: flex;
+  border:1px solid #45464A;
   justify-content: center;
   color: #9D9D9D;
   font-size: 10px;
