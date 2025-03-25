@@ -3,7 +3,7 @@
   --chat-height: 500px;
   --chat-background: #222229;
   --chat-border: 0px solid #09090a;
-  --chat-border-radius: 20px;
+  --chat-border-radius: 12px;
   --chat-shadow: 4px 4px 10px rgba(0, 0, 0, 0.15);
   --header-background: #2b2b34;
   --header-border-bottom: 1px solid #13131b;
@@ -517,6 +517,7 @@ select {
   font-size: 10px;
   padding: 5px;
   opacity: 0.8;
+  background-color: #2D2D32;
 }
 
 #cr a
