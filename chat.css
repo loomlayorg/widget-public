@@ -1,6 +1,6 @@
 :root {
   /*--chat-width: 22vw;*/
-  --chat-height: 500px;
+  --chat-height: 600px;
   --chat-background: #222229;
   --chat-border: 0px solid #09090a;
   --chat-border-radius: 12px;
@@ -93,7 +93,7 @@
   bottom: 20px;
   right: 20px;
   width: 22vw;
-  min-width: 340px;
+  min-width: 375px;
   height: var(--chat-height);
   background-color: var(--chat-background);
   border: var(--chat-border);
