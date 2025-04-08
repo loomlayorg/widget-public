@@ -256,7 +256,7 @@ border-radius: 6px;
 
 .agent-message {
       color: var(--agent-text-color);
-      display: flex;
+     /* display: flex;*/
       flex-wrap: wrap;
       gap: 8px;
       padding: 4px;
@@ -461,6 +461,7 @@ select {
 }
 
 .replybutton {
+    margin:5px;
     /*color: var(--chat-button-background)!important;*/
     padding: 8px 20px;
     /*font-family: Arial, Helvetica, sans-serif;*/
