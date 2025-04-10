@@ -92,9 +92,11 @@
 #chat-container {
   bottom: 20px;
   right: 20px;
-  width: 22vw;
+ 
   min-width: 375px;
-  height: var(--chat-height);
+  max-width: 500px;
+  max-height: 90%;
+  min-height: var(--chat-height);
   background-color: var(--chat-background);
   border: var(--chat-border);
   border-color: #494955;
