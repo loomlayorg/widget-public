@@ -93,7 +93,7 @@
   bottom: 20px;
   right: 20px;
  
-  min-width: 375px;
+  min-width: 500px;
   max-width: 500px;
   max-height: 90%;
   min-height: var(--chat-height);
