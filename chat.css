@@ -1,6 +1,6 @@
 :root {
   /*--chat-width: 22vw;*/
-  --chat-height: 600px;
+  --chat-height: 300px;
   --chat-background: #222229;
   --chat-border: 0px solid #09090a;
   --chat-border-radius: 12px;
@@ -92,10 +92,9 @@
 #chat-container {
   bottom: 20px;
   right: 20px;
- 
-  min-width: 500px;
-  max-width: 500px;
-  max-height: 90%;
+  min-width: 400px;
+  width: 30vw;
+  height: 90vh;
   min-height: var(--chat-height);
   background-color: var(--chat-background);
   border: var(--chat-border);
@@ -150,13 +149,15 @@ border-radius: 6px;
 
 @media (max-width: 720px) {
   #chat-container {
-    width: 80%;
+    width: 85%;
+    min-width: auto;
   }
 }
 
 @media (max-width: 720px) {
   #chat-container {
-    height: 80svh;
+    height: 85svh;
+    min-width: auto;
   }
 }
 
