@@ -105,6 +105,7 @@
   flex-direction: column;
   overflow: hidden;
   z-index: 1000;
+  transition:all cubic-bezier(0.075, 0.82, 0.165, 1);
 }
 
 .chat-container.pip-active-inline {
@@ -137,7 +138,6 @@ border-radius: 6px;
 
 .chat-container.pip-active-inline .header-button#close-chat-button,.chat-container.pip-active-inline .header-button#popout-chat-button {
   display: none !important;
-
 }
 
 .chat-container.pip-active-inline{
@@ -648,7 +648,9 @@ pip {
     left: 0;
 }
 
-
+h1, h2, h3, h4 {
+  margin: 0!important;
+}
 
 @media all and (display-mode: picture-in-picture) {
     body {
@@ -660,4 +662,3 @@ pip {
     }
 }
 
-h1, h2, h3, h4 {margin: 0!important;}
